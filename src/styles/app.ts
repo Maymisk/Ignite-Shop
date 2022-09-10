@@ -7,6 +7,10 @@ export const Container = styled('div', {
 	flexDirection: 'column',
 	alignItems: 'flex-start',
 	justifyContent: 'center',
+
+	'@mobile': {
+		padding: '0 1rem',
+	},
 });
 
 export const Header = styled('header', {
