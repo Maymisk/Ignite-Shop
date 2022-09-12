@@ -15,7 +15,7 @@ export const HomeContainer = styled('div', {
 	},
 });
 
-export const Product = styled('div', {
+export const Product = styled('a', {
 	minWidth: 696,
 
 	background: 'linear-gradient(180deg, #1ea483 0%, #7465d4 100%)',

@@ -1,16 +1,12 @@
 import { styled } from '.';
 
 export const Container = styled('div', {
-	minHeight: '100vh',
-
 	display: 'flex',
 	flexDirection: 'column',
 	alignItems: 'flex-start',
 	justifyContent: 'center',
 
-	'@mobile': {
-		padding: '0 1rem',
-	},
+	padding: '0 1rem',
 });
 
 export const Header = styled('header', {
@@ -19,4 +15,6 @@ export const Header = styled('header', {
 
 	padding: '2rem 0',
 	margin: '0 auto',
+
+	cursor: 'pointer',
 });

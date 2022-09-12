@@ -18,6 +18,10 @@ export const globalStyles = globalCss({
 		fontSize: '$md',
 	},
 
+	a: {
+		textDecoration: 'none',
+	},
+
 	'@mobile': {
 		html: {
 			fontSize: '87.5%',

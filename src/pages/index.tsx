@@ -1,10 +1,11 @@
-import { HomeContainer, Product, ProductFooter } from '../styles/pages/home';
-import shirtPath from '../assets/Shirt.png';
-import Image from 'next/future/image';
 import { GetStaticProps } from 'next';
-import { stripeAPI } from '../services/stripe';
+import Image from 'next/future/image';
+import Head from 'next/head';
 import { Stripe } from 'stripe';
+import { stripeAPI } from '../services/stripe';
+import { HomeContainer, Product, ProductFooter } from '../styles/pages/home';
 import { NumberFormatter } from '../utils/formatter';
+import Link from 'next/link';
 
 interface IHomeProps {
 	products: {
@@ -19,17 +20,32 @@ interface IHomeProps {
 export default function Home({ products }: IHomeProps) {
 	return (
 		<HomeContainer>
-			{products.map(product => {
+			<Head>
+				<title>igShop | Home</title>
+			</Head>
+
+			{products?.map(product => {
 				return (
-					<Product key={product.id}>
-						<Image src={product.imageUrl} alt="" />
+					<Link
+						href={`/product/${product.id}`}
+						key={product.id}
+						prefetch={false}
+					>
+						<Product>
+							<Image
+								src={product.imageUrl}
+								alt=""
+								width={520}
+								height={480}
+							/>
 
-						<ProductFooter>
-							<span>{product.name}</span>
+							<ProductFooter>
+								<span>{product.name}</span>
 
-							<strong>{product.price}</strong>
-						</ProductFooter>
-					</Product>
+								<strong>{product.price}</strong>
+							</ProductFooter>
+						</Product>
+					</Link>
 				);
 			})}
 		</HomeContainer>
@@ -37,24 +53,36 @@ export default function Home({ products }: IHomeProps) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-	const response = await stripeAPI.products.list({
-		expand: ['data.default_price'],
-	});
+	try {
+		const response = await stripeAPI.products.list({
+			expand: ['data.default_price'],
+		});
 
-	const products = response.data.map(product => {
-		const price = product.default_price as Stripe.Price;
+		const products = response.data.map(product => {
+			const price = product.default_price as Stripe.Price;
+
+			return {
+				id: product.id,
+				name: product.name,
+				imageUrl: product.images[0],
+				price: NumberFormatter.format(price.unit_amount! / 100),
+			};
+		});
 
 		return {
-			id: product.id,
-			name: product.name,
-			imageUrl: product.images[0],
-			price: NumberFormatter.format(price.unit_amount! / 100),
+			props: {
+				products,
+			},
+			revalidate: 60 * 60 * 2, // 2 hours
 		};
-	});
+	} catch (err) {
+		console.log(err);
 
-	return {
-		props: {
-			products,
-		},
-	};
+		return {
+			props: {
+				products: [],
+			},
+			revalidate: 60 * 60 * 2, // 2 hours
+		};
+	}
 };
