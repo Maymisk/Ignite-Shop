@@ -1,23 +1,35 @@
 import { GetStaticProps } from 'next';
-import Image from 'next/future/image';
 import Head from 'next/head';
+import { useState } from 'react';
 import { Stripe } from 'stripe';
+import { Product } from '../components/HomePage/product';
+import { Toast } from '../components/Toast';
 import { stripeAPI } from '../services/stripe';
-import { HomeContainer, Product, ProductFooter } from '../styles/pages/home';
+import { HomeContainer } from '../styles/pages/home';
 import { NumberFormatter } from '../utils/formatter';
-import Link from 'next/link';
+import { productSample } from '../utils/sample';
+
+interface IProduct {
+	id: string;
+	name: string;
+	imageUrl: string;
+	formattedPrice: string;
+	price: number;
+	price_id: string;
+}
 
 interface IHomeProps {
-	products: {
-		id: string;
-		name: string;
-		imageUrl: string;
-		price: string;
-	}[];
+	products: IProduct[];
 }
 
 // implement carousel with radix ui when it releases
 export default function Home({ products }: IHomeProps) {
+	const [toastIsOpen, setToastIsOpen] = useState(false);
+
+	function openToast() {
+		setToastIsOpen(true);
+	}
+
 	return (
 		<HomeContainer>
 			<Head>
@@ -26,28 +38,22 @@ export default function Home({ products }: IHomeProps) {
 
 			{products?.map(product => {
 				return (
-					<Link
-						href={`/product/${product.id}`}
+					<Product
 						key={product.id}
-						prefetch={false}
-					>
-						<Product>
-							<Image
-								src={product.imageUrl}
-								alt=""
-								width={520}
-								height={480}
-							/>
-
-							<ProductFooter>
-								<span>{product.name}</span>
-
-								<strong>{product.price}</strong>
-							</ProductFooter>
-						</Product>
-					</Link>
+						product={product}
+						openToast={openToast}
+					/>
 				);
 			})}
+
+			<Toast
+				type="foreground"
+				duration={1500}
+				title="Produto adicionado"
+				description="Produto adicionado ao carrinho!"
+				open={toastIsOpen}
+				onOpenChange={setToastIsOpen}
+			/>
 		</HomeContainer>
 	);
 }
@@ -65,7 +71,11 @@ export const getStaticProps: GetStaticProps = async () => {
 				id: product.id,
 				name: product.name,
 				imageUrl: product.images[0],
-				price: NumberFormatter.format(price.unit_amount! / 100),
+				formattedPrice: NumberFormatter.format(
+					price.unit_amount! / 100
+				),
+				price: price.unit_amount! / 100,
+				price_id: price.id,
 			};
 		});
 
@@ -80,7 +90,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
 		return {
 			props: {
-				products: [],
+				products: productSample,
 			},
 			revalidate: 60 * 60 * 2, // 2 hours
 		};

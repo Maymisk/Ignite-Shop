@@ -4,17 +4,24 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Stripe from 'stripe';
 import { stripeAPI } from '../services/stripe';
-import { ImageContainer, SuccessContainer } from '../styles/pages/success';
+import {
+	ImageContainer,
+	ImageGradient,
+	SuccessContainer,
+} from '../styles/pages/success';
+import { productSample } from '../utils/sample';
 
 interface ICheckoutProps {
 	customerName: string;
-	product: {
+	products: {
 		name: string;
 		imageUrl: string;
-	};
+	}[];
 }
 
-export default function Success({ customerName, product }: ICheckoutProps) {
+export default function Success({ customerName, products }: ICheckoutProps) {
+	const LEFT_OFFSET = (products.length - 1) * 31;
+
 	return (
 		<>
 			<Head>
@@ -22,17 +29,37 @@ export default function Success({ customerName, product }: ICheckoutProps) {
 
 				<meta name="robots" content="noindex" />
 			</Head>
-			<SuccessContainer>
-				<h1>Compra efetuada!</h1>
 
-				<ImageContainer>
-					<Image src={product.imageUrl} alt="" width={115} />
+			<SuccessContainer>
+				<ImageContainer
+					css={{
+						left: products.length > 1 ? LEFT_OFFSET : 'auto',
+					}}
+				>
+					{products.map((product, index) => {
+						return (
+							<ImageGradient
+								css={{
+									zIndex: index,
+									right: index * 62,
+								}}
+							>
+								<Image
+									src={product.imageUrl}
+									alt=""
+									width={140}
+									height={140}
+								/>
+							</ImageGradient>
+						);
+					})}
 				</ImageContainer>
 
+				<h1>Compra efetuada!</h1>
+
 				<p>
-					Uhuul <strong>{customerName},</strong> sua{' '}
-					<strong>{product.name}</strong> já está a caminho da sua
-					casa.{' '}
+					Uhuul <strong>{customerName},</strong> sua compra de{' '}
+					{products.length} camiseta(s) já está a caminho da sua casa.{' '}
 				</p>
 
 				<Link href={'/'}>Voltar ao catálogo</Link>
@@ -48,21 +75,24 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 		const checkoutSession = await stripeAPI.checkout.sessions.retrieve(
 			session_id,
 			{
-				expand: ['line_items', 'line_items.data.price.product'],
+				expand: ['line_items', 'line_items.data.product'],
 			}
 		);
 
 		const customerName = checkoutSession.customer_details?.name;
-		const product = checkoutSession.line_items?.data[0]
-			.product as Stripe.Product;
+		const products = checkoutSession.line_items?.data.map(lineItem => {
+			const product = lineItem.product as Stripe.Product;
+
+			return {
+				name: product.name,
+				imageUrl: product.images[0],
+			};
+		});
 
 		return {
 			props: {
 				customerName: customerName,
-				product: {
-					name: product.name,
-					imageUrl: product.images[0],
-				},
+				products,
 			},
 		};
 	} catch {

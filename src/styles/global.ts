@@ -18,6 +18,11 @@ export const globalStyles = globalCss({
 		fontSize: '$md',
 	},
 
+	button: {
+		border: 0,
+		cursor: 'pointer',
+	},
+
 	a: {
 		textDecoration: 'none',
 	},

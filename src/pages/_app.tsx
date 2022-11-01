@@ -1,23 +1,25 @@
 import type { AppProps } from 'next/app';
-import { Container, Header } from '../styles/app';
+import { Header } from '../components/Header';
+import { Container, ToastViewport } from '../styles/app';
 import { globalStyles } from '../styles/global';
-import logoPath from '../assets/Logo.svg';
-import Image from 'next/future/image';
-import Link from 'next/link';
+import { CartContextProvider } from '../contexts/CartContext';
+import { Provider as ToastProvider } from '@radix-ui/react-toast';
 
 globalStyles();
 
 function MyApp({ Component, pageProps }: AppProps) {
 	return (
-		<Container>
-			<Link href={'/'}>
-				<Header>
-					<Image src={logoPath} alt="" />
-				</Header>
-			</Link>
+		<ToastProvider label="Notificação" swipeDirection="right">
+			<CartContextProvider>
+				<Container>
+					<Header />
 
-			<Component {...pageProps} />
-		</Container>
+					<Component {...pageProps} />
+				</Container>
+
+				<ToastViewport />
+			</CartContextProvider>
+		</ToastProvider>
 	);
 }
 

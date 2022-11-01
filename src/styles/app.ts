@@ -1,4 +1,5 @@
 import { styled } from '.';
+import { Viewport } from '@radix-ui/react-toast';
 
 export const Container = styled('div', {
 	display: 'flex',
@@ -9,12 +10,9 @@ export const Container = styled('div', {
 	padding: '0 1rem',
 });
 
-export const Header = styled('header', {
-	width: '100%',
-	maxWidth: 1180,
-
-	padding: '2rem 0',
-	margin: '0 auto',
-
-	cursor: 'pointer',
+export const ToastViewport = styled(Viewport, {
+	position: 'absolute',
+	top: '4rem',
+	right: 0,
+	zIndex: 9999999999,
 });
